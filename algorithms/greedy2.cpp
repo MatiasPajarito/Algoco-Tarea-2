@@ -48,7 +48,7 @@ int main() {
         }
     }
 
-    // ── Cronometría: solo el algoritmo, sin I/O ──
+    // ── Cronometría: solo el algoritmo ──
     auto t_start = chrono::high_resolution_clock::now();
 
     sort(todas_opciones.begin(), todas_opciones.end(), compararOpciones);

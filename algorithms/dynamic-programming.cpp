@@ -42,7 +42,7 @@ int main() {
         }
     }
 
-    // ── Cronometría: solo el algoritmo, sin I/O ──
+    // ── Cronometría: solo el algoritmo ──
     auto t_start = chrono::high_resolution_clock::now();
 
     vector<vector<long long>> dp(M + 1, vector<long long>(E + 1, 0));
@@ -57,7 +57,7 @@ int main() {
                     next_dp[m][e] = max(next_dp[m][e],
                                         dp[m - op.tiempo][e - op.energia] + op.satisfaccion);
         }
-        dp.swap(next_dp);   // O(1) en lugar de copiar 12 MB
+        dp.swap(next_dp);
     }
 
     long long resultado = 0;

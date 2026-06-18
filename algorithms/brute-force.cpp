@@ -61,14 +61,14 @@ int main() {
         }
     }
 
-    // ── Cronometría: solo el algoritmo, sin I/O ──
+    // ── Cronometría: solo el algoritmo ──
     auto t_start = chrono::high_resolution_clock::now();
     brute_force(0, 0, 0, 0);
     auto t_end   = chrono::high_resolution_clock::now();
 
     chrono::duration<double, milli> elapsed = t_end - t_start;
 
-    cout << max_satisfaccion_global << "\n";   // resultado → stdout
-    cerr << elapsed.count() << "\n";           // tiempo    → stderr
+    cout << max_satisfaccion_global << "\n";   
+    cerr << elapsed.count() << "\n";           
     return 0;
 }
