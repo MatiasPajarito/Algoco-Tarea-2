@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <chrono>
 
 using namespace std;
 
@@ -13,7 +14,6 @@ struct OpcionGreedy {
     double ratio;
 };
 
-// Ordenar de mayor a menor ratio
 bool compararOpciones(const OpcionGreedy& a, const OpcionGreedy& b) {
     return a.ratio > b.ratio;
 }
@@ -28,48 +28,46 @@ int main() {
     vector<OpcionGreedy> todas_opciones;
 
     for (int i = 0; i < n; ++i) {
-        string nombre;
-        int q;
-        long long bono;
+        string nombre; int q; long long bono;
         cin >> nombre >> q >> bono;
 
         int t_acum = 0, c_acum = 0;
         long long v_acum = 0;
 
         for (int j = 1; j <= q; ++j) {
-            int t, c;
-            long long v;
+            int t, c; long long v;
             cin >> t >> c >> v;
-            t_acum += t;
-            c_acum += c;
-            v_acum += v;
-
-            long long satisfaccion_total = v_acum + (j == q ? bono : 0);
-            double ratio = (double)satisfaccion_total / t_acum; // Criterio Greedy 1
-
-            todas_opciones.push_back({i, t_acum, c_acum, satisfaccion_total, ratio});
+            t_acum += t; c_acum += c; v_acum += v;
+            long long sat = v_acum + (j == q ? bono : 0);
+            double ratio = (double)sat / t_acum;
+            todas_opciones.push_back({i, t_acum, c_acum, sat, ratio});
         }
     }
+
+    // ── Cronometría: solo el algoritmo, sin I/O ──
+    auto t_start = chrono::high_resolution_clock::now();
 
     sort(todas_opciones.begin(), todas_opciones.end(), compararOpciones);
 
     vector<bool> anime_visto(n, false);
-    int tiempo_gastado = 0;
-    int energia_gastada = 0;
+    int tiempo_gastado = 0, energia_gastada = 0;
     long long satisfaccion_total = 0;
 
     for (const auto& op : todas_opciones) {
-        if (!anime_visto[op.id_anime] && 
-            tiempo_gastado + op.tiempo <= M && 
+        if (!anime_visto[op.id_anime] &&
+            tiempo_gastado  + op.tiempo  <= M &&
             energia_gastada + op.energia <= E) {
-            
             anime_visto[op.id_anime] = true;
-            tiempo_gastado += op.tiempo;
+            tiempo_gastado  += op.tiempo;
             energia_gastada += op.energia;
             satisfaccion_total += op.satisfaccion;
         }
     }
 
+    auto t_end = chrono::high_resolution_clock::now();
+    chrono::duration<double, milli> elapsed = t_end - t_start;
+
     cout << satisfaccion_total << "\n";
+    cerr << elapsed.count() << "\n";
     return 0;
 }

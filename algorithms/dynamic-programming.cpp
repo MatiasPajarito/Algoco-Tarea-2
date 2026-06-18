@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <chrono>
 
 using namespace std;
 
@@ -20,14 +21,12 @@ int main() {
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
 
-    int n_global, M_global, E_global;
-    if (!(cin >> n_global >> M_global >> E_global)) return 0;
+    int n, M, E;
+    if (!(cin >> n >> M >> E)) return 0;
 
-    vector<Anime> catalogo(n_global);
-
-    for (int i = 0; i < n_global; ++i) {
-        int q;
-        long long bono;
+    vector<Anime> catalogo(n);
+    for (int i = 0; i < n; ++i) {
+        int q; long long bono;
         cin >> catalogo[i].nombre >> q >> bono;
 
         catalogo[i].opciones.push_back({0, 0, 0});
@@ -35,45 +34,41 @@ int main() {
         long long v_acum = 0;
 
         for (int j = 1; j <= q; ++j) {
-            int t, c;
-            long long v;
+            int t, c; long long v;
             cin >> t >> c >> v;
-            t_acum += t;
-            c_acum += c;
-            v_acum += v;
-            
-            long long satisfaccion_total = v_acum;
-            if (j == q) satisfaccion_total += bono; // Bono de completación
-            
-            catalogo[i].opciones.push_back({t_acum, c_acum, satisfaccion_total});
+            t_acum += t; c_acum += c; v_acum += v;
+            long long sat = v_acum + (j == q ? bono : 0);
+            catalogo[i].opciones.push_back({t_acum, c_acum, sat});
         }
     }
 
-    // dp[m][e] = max satisfacción usando 'm' minutos y 'e' energía
-    vector<vector<long long>> dp(M_global + 1, vector<long long>(E_global + 1, 0));
+    // ── Cronometría: solo el algoritmo, sin I/O ──
+    auto t_start = chrono::high_resolution_clock::now();
 
-    for (int i = 0; i < n_global; ++i) {
-        vector<vector<long long>> next_dp = dp; 
-        
-        for (const auto& opcion : catalogo[i].opciones) {
-            if (opcion.tiempo == 0 && opcion.energia == 0) continue;
-            
-            for (int m = opcion.tiempo; m <= M_global; ++m) {
-                for (int e = opcion.energia; e <= E_global; ++e) {
-                    next_dp[m][e] = max(next_dp[m][e], dp[m - opcion.tiempo][e - opcion.energia] + opcion.satisfaccion);
-                }
-            }
+    vector<vector<long long>> dp(M + 1, vector<long long>(E + 1, 0));
+
+    for (int i = 0; i < n; ++i) {
+        vector<vector<long long>> next_dp = dp;
+
+        for (const auto& op : catalogo[i].opciones) {
+            if (op.tiempo == 0 && op.energia == 0) continue;
+            for (int m = op.tiempo; m <= M; ++m)
+                for (int e = op.energia; e <= E; ++e)
+                    next_dp[m][e] = max(next_dp[m][e],
+                                        dp[m - op.tiempo][e - op.energia] + op.satisfaccion);
         }
-        dp = next_dp;
+        dp.swap(next_dp);   // O(1) en lugar de copiar 12 MB
     }
 
-    long long max_satisfaccion = 0;
-    for (int m = 0; m <= M_global; ++m) {
-        for (int e = 0; e <= E_global; ++e) {
-            max_satisfaccion = max(max_satisfaccion, dp[m][e]);
-        }
-    }
+    long long resultado = 0;
+    for (int m = 0; m <= M; ++m)
+        for (int e = 0; e <= E; ++e)
+            resultado = max(resultado, dp[m][e]);
 
-    cout << max_satisfaccion << "\n";
+    auto t_end = chrono::high_resolution_clock::now();
+    chrono::duration<double, milli> elapsed = t_end - t_start;
+
+    cout << resultado << "\n";
+    cerr << elapsed.count() << "\n";
     return 0;
 }
